@@ -1,0 +1,12 @@
+{
+  "name": "constellations",
+  "type": "module",
+  "engines": {
+    "node": ">=13.2.0"
+  },
+  "devDependencies": {
+    "test-on-puppeteer": "bunsanweb/test-on-puppeteer#master"
+  },
+  "scripts": {
+  }
+}
