@@ -1,0 +1,3 @@
+[submodule "modules/stardust-ipfs"]
+	path = modules/stardust-ipfs
+	url = https://github.com/bunsanweb/stardust-ipfs.git

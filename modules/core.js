@@ -17,27 +17,29 @@ export const Core = class extends EventTarget {
     const link = {url, point, nameSet};
     this.links.push(link);
     this.dispatchEvent(
-      new ConstellationsEvent("stardust-arrival", {detail: link}));
+      new ConstellationsEvent("stardust-arrived", {detail: link}));
   }
 
   // Reader for Raw URL and metadata
   subscribe({point, names = []} = {}, from = undefined) {
+    const enqueue = (controller, link) => {
+      if (point && link.point !== point) return;
+      if (names.some(n => !link.nameSet.has(n))) return;
+      controller.enqueue(link);
+    };
+    
     let listener;
     return new ReadableStream({
       start: controller => {
         if (from) {
           const idx = this.links.findIndex(link => link.url === from);
           if (idx >= 0) {
-            for (let i = idx; i < this.links; i++) {
-              controller.enqueue(this.links[i]);
+            for (let i = idx; i < this.links.length; i++) {
+              enqueue(controller, this.links[i]);
             }
           }
         }
-        listener = ev => {
-          if (point && ev.detail.point !== point) return;
-          if (names.some(n => !ev.detail.nameSet.has(n))) return;
-          controller.enqueue(ev.detail);
-        };
+        listener = ev => enqueue(controller, ev.detail);
         this.addEventListener("stardust-arrived", listener);
       },
       cancel: reason => {
@@ -45,7 +47,8 @@ export const Core = class extends EventTarget {
       },
     });
   }
+
+  // TBD: reversed from now to past
 };
 
-
-// TBD: client API: wrap Stardust url with BResource link
+// TBD: client API: wrap Stardust url with BResource link 
