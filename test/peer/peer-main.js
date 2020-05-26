@@ -5,12 +5,11 @@ import "https://cdn.jsdelivr.net/npm/ipfs/dist/index.min.js";
 const main = async () => {
   console.info("[INFO] IPFS node spawn several logs includes WebSocket Errors");
   
-  const node = await Ipfs.create({
+  const node = window.ipfsNode = await Ipfs.create({
     repo: `ipfs-${Math.random()}`,
     relay: {enabled: true, hop: {enabled: true, active: true}},
   });
   await node.ready;
-  window.ipfsNode = node;
   console.debug("IPFS version:", (await node.version()).version);
   const myid = (await node.id()).id;
   console.debug(`Peer ID:`, myid);
@@ -44,6 +43,18 @@ const main = async () => {
       await peer.publishLink({url, point, names});
       log.textContent = `[publish] ${url} ${point} ${names.join(",")}\n` +
         log.textContent;
+    })().catch(console.error);
+  });
+
+  // restart
+  document.querySelector("#restart").addEventListener("click", ev => {
+    ev.target.disabled = true;
+    (async () => {
+      await peer.stop();
+      await node.stop();
+      await node.start();
+      await peer.start();
+      ev.target.disabled = false;      
     })().catch(console.error);
   });
 };

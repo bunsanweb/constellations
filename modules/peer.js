@@ -11,16 +11,35 @@ export const Peer = class extends EventTarget {
     super();
     this.node = node;
     this.handler = onMessage041.bind(this);
+    this.connects = new Set();
   }
-  
+
+  //NOTE: restarting does not work well. incoming is OK, outgoing is not.
+  // - bug on libp2p.pubsub or not?
+  // - if not, implement swarm.connect heartbeat in Peer
   async start() {
-    this.node.libp2p.pubsub.subscribe(topicId, this.handler);
+    await this.node.libp2p.pubsub.subscribe(topicId, this.handler);
+    for (const id of this.connects) {
+      try {
+        await this.connect(id);
+      } catch (error) {
+        console.debug(error);
+      }
+    }
     return this;
   }
+  async stop() {
+    try {
+      await this.node.libp2p.pubsub.unsubscribe(topicId, this.handler);
+    } catch (error) {
+      console.debug(error);
+    }
+  }  
   
   // connect to p2pid
   async connect(id) {
     await connect041(this.node, id);
+    this.connects.add(id);
   }
 
   // publish each link
@@ -33,7 +52,7 @@ export const Peer = class extends EventTarget {
     });
     const buffer = new TextEncoder().encode(msg);
     await this.node.libp2p.pubsub.publish(topicId, buffer);
-  }
+  }  
 };
 
 // handler for pubsub  for js-ipfs >= 0.41
