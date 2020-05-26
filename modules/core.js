@@ -14,7 +14,7 @@ export const Core = class extends EventTarget {
   publish(url, point, names) {
     if (this.urls.has(url)) return;
     const nameSet = new Set(names);
-    const link = {url, point, nameSet};
+    const link = {url, point, names};
     this.links.push(link);
     this.dispatchEvent(
       new ConstellationsEvent("stardust-arrived", {detail: link}));
@@ -24,7 +24,8 @@ export const Core = class extends EventTarget {
   subscribe({point, names = []} = {}, from = undefined) {
     const enqueue = (controller, link) => {
       if (point && link.point !== point) return;
-      if (names.some(n => !link.nameSet.has(n))) return;
+      const nameSet = new Set(link.names);
+      if (names.some(n => !nameSet.has(n))) return;
       controller.enqueue(link);
     };
     

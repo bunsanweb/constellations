@@ -54,7 +54,7 @@ const stardusts2 = [
     for (let i = 0; i < 4; i++) {
       const {value, done} = await reader.read();
       if (done) break;
-      const {url, point, nameSet} = value;
+      const {url, point, names} = value;
       console.log("[subscribe1]", url); // stardust1,2,3
     }
     reader.releaseLock();
@@ -70,7 +70,7 @@ const stardusts2 = [
     for (let i = 0; i < 3; i++) {
       const {value, done} = await reader.read();
       if (done) break;
-      const {url, point, nameSet} = value;
+      const {url, point, names} = value;
       console.log("[subscribe2]", url); // stardust5,6,8
     }
     reader.releaseLock();
@@ -93,7 +93,7 @@ const stardusts2 = [
     for (let i = 0; i < 4; i++) {
       const {value, done} = await reader.read();
       if (done) break;
-      const {url, point, nameSet} = value;
+      const {url, point, names} = value;
       console.log("[subscribe2]", url); // stardust1,2,5,6
     }
     reader.releaseLock();
