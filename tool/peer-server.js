@@ -22,7 +22,10 @@ export const PeerServer = class {
     this.peer = await Peer.create(this.node);
     
     this.server = http.createServer((req, res) => {
-      res.writeHead(200, {"content-type": "application/json"});
+      res.writeHead(200, {
+        "content-type": "application/json",
+        "access-control-allow-origin": "*", 
+      });
       res.end(JSON.stringify({id: this.id}));
     });
     const data = await new Promise((f, r) => {

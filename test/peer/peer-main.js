@@ -23,8 +23,9 @@ const main = async () => {
     log.textContent = `[stardust-arrived] ${url} ${point} ${names.join(",")}\n` +
       log.textContent;
   });
-
+  
   // swarm.connect
+  /*
   document.querySelector("#connect").addEventListener("click", ev => {
     const id = document.querySelector("#swarm").value.trim();
     (async () => {
@@ -32,7 +33,18 @@ const main = async () => {
       log.textContent = `[swarm.conected] ${id}\n` + log.textContent;
     })().catch(console.error);
   });
-
+  */
+  // swarm.connect to peer-server
+  {
+    const res = await fetch("http://localhost:21212/");
+    const {id} = await res.json();
+    console.log("Peer-server", id);
+    await peer.connect(id);
+    log.textContent = `[swarm.conected] ${id}\n` + log.textContent;
+    document.querySelector("#publish").disabled = false;
+    document.querySelector("#restart").disabled = false;
+  }
+  
   // Publish Link
   let index = 0;
   document.querySelector("#publish").addEventListener("click", ev => {
@@ -48,13 +60,15 @@ const main = async () => {
 
   // restart
   document.querySelector("#restart").addEventListener("click", ev => {
-    ev.target.disabled = true;
+    document.querySelector("#publish").disabled = true;
+    document.querySelector("#restart").disabled = true;
     (async () => {
       await peer.stop();
       await node.stop();
       await node.start();
       await peer.start();
-      ev.target.disabled = false;      
+      document.querySelector("#publish").disabled = false;
+      document.querySelector("#restart").disabled = false;
     })().catch(console.error);
   });
 };
