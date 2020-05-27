@@ -20,7 +20,8 @@ const main = async () => {
   const log = document.querySelector("#log");
   peer.addEventListener("stardust-arrived", ev => {
     const {url, point, names} = ev.detail;
-    log.textContent = `[stardust-arrived] ${url} ${point} ${names.join(",")}\n` +
+    log.textContent =
+      `[stardust-arrived] ${url} ${point} ${names.join(",")}\n` +
       log.textContent;
   });
   
@@ -63,6 +64,11 @@ const main = async () => {
     document.querySelector("#publish").disabled = true;
     document.querySelector("#restart").disabled = true;
     (async () => {
+      await peer.stop();
+      await node.stop();
+      await node.start();
+      await peer.start();
+      //WORKAROUND: recovering pubsub after restarted twice and more. why?
       await peer.stop();
       await node.stop();
       await node.start();
