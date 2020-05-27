@@ -1,4 +1,4 @@
-
+import {EventTarget, CustomEvent} from "./event-polyfill.js";
 export const topicId = "bunsanweb-constellations";
 export const PeerEvent = class extends CustomEvent {};
 
