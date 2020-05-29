@@ -7,7 +7,7 @@
 // - Network: Propagate Stardust links to other constellation peers
 // - Storage: Storing Stardust link urls to Web Storage(IndexedDB)
 //
-// Constellations Peer Core
+// Constellations Peer Core (as Core)
 //
 // - clients receives Stardust link as BResource Link
 // - clients get Stardust links from ReadableStream (Web Stream's, not node.js's)
@@ -17,14 +17,14 @@
 // - Core sends events of Stardust link arrival
 // - Core interact with other Cores on window with standard BroadcastChannel API?
 // 
-// Constellations Peer Collector
+// Constellations Peer Collector (as Aggretaor)
 //
 // - Collector collects Stardust link from registered Stardust-list urls
 // - Collector schedules accessing Stardust-list url
 // - Collector stores last Stardust link url of each Stardust-list url
 // - Collector send newer Stardust links to Core 
 //
-// Constellations Peer Network
+// Constellations Peer Network (as Peer)
 //
 // - Network subscribes IPFS pubsub and connects other peers
 // - Network publishes arrival Stardust link url on Core (via Core events)

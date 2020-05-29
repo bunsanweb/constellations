@@ -1,3 +1,9 @@
 [submodule "modules/stardust-ipfs"]
 	path = modules/stardust-ipfs
 	url = https://github.com/bunsanweb/stardust-ipfs.git
+[submodule "modules/bresource"]
+	path = modules/bresource
+	url = https://github.com/bunsanweb/bresource.git
+[submodule "modules/fetch-ipfs"]
+	path = modules/fetch-ipfs
+	url = https://github.com/bunsanweb/fetch-ipfs.git
