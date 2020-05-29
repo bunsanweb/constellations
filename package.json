@@ -8,5 +8,8 @@
     "ipfs": "^0.44.0",
     "test-on-puppeteer": "bunsanweb/test-on-puppeteer#master"
   },
-  "scripts": {}
+  "scripts": {
+    "t:core": "node test/core/run.js",
+    "test": "npm run t:core"
+  }
 }
