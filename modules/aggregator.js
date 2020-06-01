@@ -9,13 +9,15 @@ export const AggregateEvent = class extends CustomEvent {};
 //       - NOTE: aggregator is not manage scheduling
 export const Aggregator = class extends EventTarget {
   constructor(pageUrl) {
+    super();
     this.pageUrl = pageUrl;
     this.cache = new Set();
   }
   
   async aggregate(options = {}) {
-    const link = Stardust.stardustPageLink(this.pageUrl, options);
+    const link = await Stardust.stardustPageLink(this.pageUrl, options);
     const collector = Stardust.stardustCollector();
+    const ordered = [];
     for await (const stardust of collector(link)) {
       const url = stardust.uri;
       if (this.cache.has(url)) break; // stop, reached to the last end
@@ -26,10 +28,11 @@ export const Aggregator = class extends EventTarget {
       // TBD: check same point/names values in the stardust document
       //const entity = await stardust.entity();
       // ...
-      
-      this.dispatchEvent(
-        new AggregateEvent("stardust-arrived", {detail: {url, point, names}}));
+      ordered.unshift({url, point, names}); // reversed order
+      this.cache.add(url);
+    }
+    for (const detail of ordered) {
+      this.dispatchEvent(new AggregateEvent("stardust-arrived", {detail}));
     }
   }
 };
-

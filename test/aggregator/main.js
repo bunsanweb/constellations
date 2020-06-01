@@ -1,31 +1,70 @@
 import * as Aggregator from "./modules/aggregator.js";
-import * as Stardust from "./modules/stardust-ipfs/modules/stardust.js";
-import * as FetchIFS from "./modules/fetch-ipfs/modules/fetch-ipfs.js";
+import * as Stardust from "./modules/stardust.js";
+//import * as Aggregatort from "http://localhost:10000/aggregator.js";
+//import * as Stardust from "http://localhost:10000/stardust.js";
 
-//import "https://cdn.jsdelivr.net/npm/ipfs/dist/index.min.js";
+const store = new Map();
+const fakeFetch = async function fetch(req) {
+  if (typeof req === "string") req = new Request(req);
+  const url = req.url;
+  if (!store.has(url)) return new Response("", {
+    status: 404, statusText: "Not Found"});
 
-const main = async () => {
-  //console.info("[INFO] IPFS node spawn several logs includes WebSocket Errors");
-  /*
-  const node = window.ipfsNode = await Ipfs.create({
-    repo: `ipfs-${Math.random()}`,
-    relay: {enabled: true, hop: {enabled: true, active: true}},
-  });
-  await node.ready;
-  console.debug("IPFS version:", (await node.version()).version);
-  const myid = (await node.id()).id;
-  console.debug(`Peer ID:`, myid);
-  */
-
-  //1. setup Publishing stardusts
-  //   - stardust urls are on IPFS
-  //   - the latest list url is fake with wrapped fetch impl
-  
-  //2. create Aggregator for the latest list url
-  
-  //3. do aggregate() and check stardust-arrived event results
-
-  
-  
+  const text = store.get(url).documentElement.outerHTML;
+  const blob = new Blob([text], {type: "text/html;charset=utf-8"});
+  const init = {
+    headers: {"content-length": blob.size},
+  };
+  return new Response(blob, init);
 };
-main().catch(console.error);
+
+const eqSet = (a, b) => {
+  if (a.length !== b.length) return false;
+  const bs = new Set(b);
+  return a.every(e => bs.has(e));
+}
+
+(async () => {
+  // stardust and stardust-page
+  const l1url = "http://example.org/l1.html";
+  const l1doc = Stardust.newStardustPage();
+  store.set(l1url, l1doc);
+
+  const s1url = "http://example.org/s1.html";
+  const s1doc = Stardust.newStardust({
+    point: "http://example.com/target1", title: "Target 1",
+    names: ["foo", "bar"],
+  });  
+  store.set(s1url, s1doc);
+  Stardust.addStardustLink(l1doc, s1url, s1doc);
+  
+  const s2url = "http://example.org/s2.html";
+  const s2doc = Stardust.newStardust({
+    point: "http://example.com/target1", title: "Target 1",
+    names: ["bar", "buzz"],
+  });
+  store.set(s2url, s2doc);
+  Stardust.addStardustLink(l1doc, s2url, s2doc);
+  //console.log(l1doc.documentElement.outerHTML);
+  
+  // aggregator
+  const expects = [
+    {url: s1url, point: "http://example.com/target1", names: ["foo", "bar"]},
+    {url: s2url, point: "http://example.com/target1", names: ["bar", "buzz"]},
+  ];
+  let index = 0;
+  const aggregator = new Aggregator.Aggregator(l1url);
+  aggregator.addEventListener("stardust-arrived", ev => {
+    const {url, point, names} = ev.detail;
+    //console.log(url, point, names);
+    console.assert(url === expects[index].url, `uri ${index}`);
+    console.assert(point === expects[index].point, `point ${index}`);
+    console.assert(eqSet(names, expects[index].names), `names ${index}`);
+    index++;
+  });
+  
+  await aggregator.aggregate({fetch: fakeFetch});
+
+  //console.log("[finished]");
+  if (typeof window.finish === "function" ) window.finish();
+})().catch(console.error);
