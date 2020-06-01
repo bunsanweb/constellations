@@ -1,4 +1,6 @@
 import * as BResource from "./modules/bresource/modules/bresource.js";
+import * as Stardust from "./modules/stardust.js";
+
 
 export const AggregateEvent = class extends CustomEvent {};
 
@@ -14,16 +16,14 @@ export const Aggregator = class extends EventTarget {
   
   async aggregate(options = {}) {
     const link = await listLink(this.listUrl, options);
-    const collector = stardustCollector();
+    const collector = Stardust.stardustCollector();
     for await (const stardust of collector(link)) {
       const url = stardust.uri;
       if (this.cache.has(url)) break; // stop, reached to the last end
       //TBD: locator of constellations metadata of stardusts
-      const point = stardust.attribute(
-        "[class~=lint-tostardust]{a[slot~=constellations-point]}href#url"
-      ).href; 
-      const names = stardust.attribute(
-        "[class~=lint-tostardust]{a[slot~=constellations-names]}#list");
+      const point = stardust.attribute(Stardust.linkPoint); 
+      const names = stardust.attribute(Stardust.linkNames);
+        
       // TBD: check same point/names values in the stardust document
       //const entity = await stardust.entity();
       //const pointInDoc = entity.doc.querySelector(
@@ -45,17 +45,4 @@ const listLink = async (linkUrl, options) => {
   const docLink = BResource.documentLink(doc, options);
   const link = (await docLink.links())[0];
   return link;
-};
-
-const stardustCollector = () => {
-  //NOTE: specification of stardust-link document
-  //
-  // stardust-list document has div[class~=link-to-stardust] for each link
-  // - div[class~=link-to-stardust] contains a[rel~=stardust] for stardust url
-  // stardust-list document may have link[rel=~prev] for previous stardust-link
-  //
-  // these are implemented at stardust-ipfs/modules/list.js
-  const stardustCollector = BResource.collector(["a[rel~=stardust]"]);
-  const prevCollector = BResource.collector(["link[rel=~prev]"]);
-  return BResource.paged(stardustCollector, prevCollector);
 };
