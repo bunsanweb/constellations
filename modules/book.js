@@ -12,13 +12,13 @@ export const Book = class extends EventTarget {
     };
   }
   
-  async start(storategy) {
-    this.storategy = storategy;
-    await storategy.start(this);
+  async start(strategy) {
+    this.strategy = strategy;
+    await strategy.start(this);
   }
   async stop() {
-    await this.storategy.stop(this);
-    this.storategy = null;
+    await this.strategy.stop(this);
+    this.strategy = null;
   }
   
   add(pageUrl) {
@@ -57,7 +57,7 @@ export const RollingStrategy = class {
         if (this.active) await new Promise(
           f => setTimeout(f, Math.max(0, this.minPeriod - (end - start))));
       }
-    });
+    })();
   }
   async stop(book) {
     this.active = false;
