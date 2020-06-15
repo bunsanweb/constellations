@@ -5,7 +5,7 @@
     "node": ">=13.2.0"
   },
   "devDependencies": {
-    "ipfs": "^0.44.0",
+    "ipfs": "*",
     "test-on-puppeteer": "bunsanweb/test-on-puppeteer#master"
   },
   "scripts": {
