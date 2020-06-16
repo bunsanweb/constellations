@@ -9,7 +9,7 @@ import * as Storage from "./storage.js";
 import * as Peer from "./peer.js";
 
 
-const Constellations = class {
+export const Constellations = class {
   constructor(options) {
     super();
     this.options = options;
@@ -17,6 +17,33 @@ const Constellations = class {
     this.book = new Book.Book(options);
     this.storage = new Storage.Storage(options);
     this.peer = null;
+ 
+    this.listeners = {};
+    this.listeners.arrivedCore = ev => {
+      const {url, point, names} = ev.detail;
+      this.storage.post({url, point, names});
+      this.peer.publishLink({url, point, names});
+    };
+    this.listeners.arrivedBook = ev => {
+      const {url, point, names} = ev.detail;
+      this.core.publish(url, point, names);
+    };
+    this.listeners.arrivedPeer = ev => {
+      const {url, point, names} = ev.detail;
+      this.core.publish(url, point, names);
+    };
+    this.listeners.aggregated = ev => {
+      const {pageUrl, lastUrl} = ev.detail;
+      this.storage.putPage(pageUrl, lastUrl);
+    };
+    this.listeners.pageAdded = ev => {
+      const {pageUrl} = ev.detail;
+      this.storage.putPage(pageUrl);
+    };
+    this.listeners.pageRemoved = ev => {
+      const {pageUrl} = ev.detail;
+      this.storage.deletePage(pageUrl);
+    };
   }
   static async start(node, options = {}) {
     const self = new this(options);
@@ -25,35 +52,48 @@ const Constellations = class {
     for (const {url, point, names} of links) {
       self.publish(url, point, names);
     }
-    //TBD: restore book states
-
+    // restore book states
+    const pages = await self.storage.getAllPages();
+    for (const {pageUrl, lastUrl} of links) {
+      self.book.add(pageUrl, lastUrl);
+    }
+    
     // start peer
     self.peer = new Peer.Peer(node);
 
     // connect events
-    self.core.addEventListener("stardust-arrived", ev => {
-      const {url, point, names} = ev.detail;
-      self.storage.post({url, point, names});
-      self.peer.publishLink({url, point, names});
-    });
-    self.book.addEventListener("stardust-arrived", ev => {
-      const {url, point, names} = ev.detail;
-      self.core.publish(url, point, names);
-    });
-    self.peer.addEventListener("stardust-arrived", ev => {
-      const {url, point, names} = ev.detail;
-      self.core.publish(url, point, names);
-    });
+    self.core.addEventListener("stardust-arrived", self.listeners.arrivedCore);
+    self.book.addEventListener("stardust-arrived", self.listeners.arrivedBook);
+    self.peer.addEventListener("stardust-arrived", self.listeners.arrivedPeer);
+    self.book.addEventListener("aggregated", self.listeners.aggregated);
+    self.book.addEventListener("page-added", self.listeners.pageAdded);
+    self.book.addEventListener("page-removed", self.listeners.pageRemoved);
     
     // activate
     await self.peer.start();
-    await self.book.start(options.strategy || Book.RollingStrategy);
+    await self.book.start(options.strategy || new Book.RollingStrategy());
   }
   async stop() {
     await Promise.all([this.book.stop(), this.peer.stop()]);
+    this.core.removeEventListener(
+      "stardust-arrived", this.listeners.arrivedCore);
+    this.book.removeEventListener(
+      "stardust-arrived", this.listeners.arrivedBook);
+    this.peer.removeEventListener(
+      "stardust-arrived", this.listeners.arrivedPeer);
+    this.book.removeEventListener("aggregated", this.listeners.aggregated);
+    this.book.removeEventListener("page-added", this.listeners.pageAdded);
+    this.book.removeEventListener("page-removed", this.listeners.pageRemoved);
   }
 
+  // for client 
   subscribe(...args) {
     return this.core.subscribe(...args);
+  }
+  addPage(pageUrl) {
+    this.book.add(pageUrl);
+  }
+  deletePage(pageUrl) {
+    this.book.delete(pageUrl);    
   }
 };

@@ -21,7 +21,7 @@ export const Book = class extends EventTarget {
     this.strategy = null;
   }
   
-  add(pageUrl, lastUrl = null) {
+  add(pageUrl, lastUrl = undefined) {
     const aggregator = new Aggregator(pageUrl, lastUrl);
     aggregator.addEventListener("stardust-arrived", this.listener);
     aggregator.addEventListener("aggregated", this.listener);
