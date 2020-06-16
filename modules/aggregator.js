@@ -8,19 +8,20 @@ export const AggregateEvent = class extends CustomEvent {};
 //       - cache stardust urls already acquired
 //       - NOTE: aggregator is not manage scheduling
 export const Aggregator = class extends EventTarget {
-  constructor(pageUrl) {
+  constructor(pageUrl, lastUrl) {
     super();
     this.pageUrl = pageUrl;
-    this.cache = new Set();
+    this.lastUrl = lastUrl;
   }
   
   async aggregate(options = {}) {
     const link = await Stardust.stardustPageLink(this.pageUrl, options);
     const collector = Stardust.stardustCollector();
     const ordered = [];
+    let lastUrl = null;
     for await (const stardust of collector(link)) {
       const url = stardust.uri;
-      if (this.cache.has(url)) break; // stop, reached to the last end
+      if (url === this.lastUrl) break; // stop, reached to the last end
       //TBD: locator of constellations metadata of stardusts
       const point = stardust.attribute(Stardust.linkPoint)[0].href; 
       const names = stardust.attribute(Stardust.linkNames)[0];
@@ -29,10 +30,15 @@ export const Aggregator = class extends EventTarget {
       //const entity = await stardust.entity();
       // ...
       ordered.unshift({url, point, names}); // reversed order
-      this.cache.add(url);
+      if (!lastUrl) lastUrl = url;
     }
     for (const detail of ordered) {
       this.dispatchEvent(new AggregateEvent("stardust-arrived", {detail}));
+    }
+    if (lastUrl) {
+      this.lastUrl = lastUrl;
+      const detail = {pageUrl: this.pageUrl, lastUrl};
+      this.dispatchEvent(new AggregateEvent("aggregated", {detail}));
     }
   }
 };
