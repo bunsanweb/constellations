@@ -29,6 +29,8 @@ const sameSet = (a, b) => {
   await Storage.ready(indexedDB.deleteDatabase(dbname));
   
   const storage = await Storage.Storage.open({dbname});
+
+  // links
   for (const link of stardusts) {
     await storage.post(link);
   }
@@ -37,6 +39,21 @@ const sameSet = (a, b) => {
     (l, i) => l.url === links[i].url && l.point === links[i].point &&
       sameSet(l.names, links[i].names)), "links1", links);
 
+  // pages
+  const pageUrl = "http://example/page.html";
+  await storage.putPage(pageUrl);
+  const page0 = (await storage.getAllPages())[0];
+  console.assert(page0.pageUrl === pageUrl);
+  console.assert(page0.lastUrl === undefined);
+  const lastUrl = stardusts[0].url;
+  await storage.putPage(pageUrl, lastUrl);
+  const page1 = (await storage.getAllPages())[0];
+  console.assert(page1.pageUrl === pageUrl);
+  console.assert(page1.lastUrl === lastUrl);
+  await storage.deletePage(pageUrl);
+  console.assert((await storage.getAllPages()).length === 0);
+  
+  // close
   await storage.close();
   await Storage.ready(indexedDB.deleteDatabase(dbname));
 
