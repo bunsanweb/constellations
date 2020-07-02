@@ -1,5 +1,5 @@
-// Book: scheduling aggregators
-import {Aggregator} from "./aggregator.js";
+// Book: scheduling collectors
+import {Collector} from "./collector.js";
 
 export const BookEvent = class extends CustomEvent {};
 export const Book = class extends EventTarget {
@@ -22,18 +22,18 @@ export const Book = class extends EventTarget {
   }
   
   add(pageUrl, lastUrl = undefined) {
-    const aggregator = new Aggregator(pageUrl, lastUrl);
-    aggregator.addEventListener("stardust-arrived", this.listener);
-    aggregator.addEventListener("aggregated", this.listener);
-    this.book.set(pageUrl, aggregator);
+    const collector = new Collector(pageUrl, lastUrl);
+    collector.addEventListener("stardust-arrived", this.listener);
+    collector.addEventListener("collected", this.listener);
+    this.book.set(pageUrl, collector);
     this.dispatchEvent(new BookEvent("page-added", {detail: {pageUrl}}));
     if (this.storategy) this.storategy.added(pageUrl);
   }
   delete(pageUrl) {
     if (!this.book.has(pageUrl)) return;
-    const aggregator = this.book.get(pageUrl);
-    aggregator.removeEventListener("stardust-arrived", this.listener);
-    aggregator.removeEventListener("aggregated", this.listener);
+    const collector = this.book.get(pageUrl);
+    collector.removeEventListener("stardust-arrived", this.listener);
+    collector.removeEventListener("collected", this.listener);
     this.book.delete(pageUrl);
     this.dispatchEvent(new BookEvent("page-removed", {detail: {pageUrl}}));
     if (this.storategy) this.storategy.deleted(pageUrl);
@@ -50,9 +50,9 @@ export const RollingStrategy = class {
     this.promise = (async () => {
       while (this.active) {
         const start = Date.now();
-        for (const [pageUrl, aggregator] of book.book) {
+        for (const [pageUrl, collector] of book.book) {
           if (this.active) try {
-            await aggregator.aggregate(book.options);
+            await collector.collect(book.options);
           } catch (error) {
           }
         }

@@ -1,5 +1,5 @@
-import * as Stardust from "./modules/stardust.js";
-//import * as Stardust from "http://localhost:10000/stardust.js";
+//import * as Stardust from "./modules/stardust.js";
+import * as Stardust from "http://localhost:10000/stardust.js";
 
 const store = new Map();
 const fakeFetch = async function fetch(req) {

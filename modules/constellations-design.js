@@ -17,7 +17,7 @@
 // - Core sends events of Stardust link arrival
 // - Core interact with other Cores on window with standard BroadcastChannel API?
 // 
-// Constellations Peer Collector (as Book/Aggretaor)
+// Constellations Peer Collector (as Book/Collector)
 //
 // - Collector collects Stardust link from registered Stardust-list urls
 // - Collector schedules accessing Stardust-list url
@@ -42,7 +42,7 @@
 //
 //  Clinets => Core <=>|
 //                     |=> Strage
-//                     |<= Book <= Aggregators
+//                     |<= Book <= Collectors
 //                     |<= Peer
 //
 //

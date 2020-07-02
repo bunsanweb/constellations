@@ -1,20 +1,18 @@
 import * as Stardust from "./stardust.js";
 
+export const CollectEvent = class extends CustomEvent {};
 
-export const AggregateEvent = class extends CustomEvent {};
-
-
-// NOTE: Aggregator check each starudst-page url
+// NOTE: Collector check each starudst-page url
 //       - cache stardust urls already acquired
-//       - NOTE: aggregator is not manage scheduling
-export const Aggregator = class extends EventTarget {
+//       - NOTE: collectors do not manage scheduling
+export const Collector = class extends EventTarget {
   constructor(pageUrl, lastUrl) {
     super();
     this.pageUrl = pageUrl;
     this.lastUrl = lastUrl;
   }
   
-  async aggregate(options = {}) {
+  async collect(options = {}) {
     const link = await Stardust.stardustPageLink(this.pageUrl, options);
     const collector = Stardust.stardustCollector();
     const ordered = [];
@@ -33,12 +31,12 @@ export const Aggregator = class extends EventTarget {
       if (!lastUrl) lastUrl = url;
     }
     for (const detail of ordered) {
-      this.dispatchEvent(new AggregateEvent("stardust-arrived", {detail}));
+      this.dispatchEvent(new CollectEvent("stardust-arrived", {detail}));
     }
     if (lastUrl) {
       this.lastUrl = lastUrl;
       const detail = {pageUrl: this.pageUrl, lastUrl};
-      this.dispatchEvent(new AggregateEvent("aggregated", {detail}));
+      this.dispatchEvent(new CollectEvent("collected", {detail}));
     }
   }
 };

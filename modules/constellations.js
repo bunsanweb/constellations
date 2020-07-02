@@ -1,6 +1,6 @@
 //  Clinets => Core <=>|
 //                     |=> Strage
-//                     |<= Book <= Aggregators
+//                     |<= Book <= Collectors
 //                     |<= Peer
 //
 import * as Core from "./core.js";
@@ -32,7 +32,7 @@ export const Constellations = class {
       const {url, point, names} = ev.detail;
       this.core.publish(url, point, names);
     };
-    this.listeners.aggregated = ev => {
+    this.listeners.collected = ev => {
       const {pageUrl, lastUrl} = ev.detail;
       this.storage.putPage(pageUrl, lastUrl);
     };
@@ -65,7 +65,7 @@ export const Constellations = class {
     self.core.addEventListener("stardust-arrived", self.listeners.arrivedCore);
     self.book.addEventListener("stardust-arrived", self.listeners.arrivedBook);
     self.peer.addEventListener("stardust-arrived", self.listeners.arrivedPeer);
-    self.book.addEventListener("aggregated", self.listeners.aggregated);
+    self.book.addEventListener("collected", self.listeners.collected);
     self.book.addEventListener("page-added", self.listeners.pageAdded);
     self.book.addEventListener("page-removed", self.listeners.pageRemoved);
     
@@ -81,7 +81,7 @@ export const Constellations = class {
       "stardust-arrived", this.listeners.arrivedBook);
     this.peer.removeEventListener(
       "stardust-arrived", this.listeners.arrivedPeer);
-    this.book.removeEventListener("aggregated", this.listeners.aggregated);
+    this.book.removeEventListener("collected", this.listeners.collected);
     this.book.removeEventListener("page-added", this.listeners.pageAdded);
     this.book.removeEventListener("page-removed", this.listeners.pageRemoved);
   }

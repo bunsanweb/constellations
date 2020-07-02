@@ -5,7 +5,7 @@
 //     - link: {url: string, point: string, names: [string]}
 // - core loads link object set from the Storage
 // - store other data
-//     - book/aggregator state: pageUrl/cached stardustUrl
+//     - book/collector state: pageUrl/cached stardustUrl
 //     - peer state: swarm.connect ids
 //
 // NOTE:

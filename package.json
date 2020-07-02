@@ -10,6 +10,12 @@
   },
   "scripts": {
     "t:core": "node test/core/run.js",
-    "test": "npm run t:core"
+    "t:stardust": "node test/stardust/run.js",
+    "t:collector": "node test/collector/run.js",
+    "t:book": "node test/book/run.js",
+    "t:storage": "node test/storage/run.js",
+    "t:peer": "node test/peer/run.js",
+    "peer-server": "node test/peer/peer-server.js",
+    "test": "npm run t:core && npm run t:stardust && npm run t:collector && npm run t:book && npm run t:storage"
   }
 }

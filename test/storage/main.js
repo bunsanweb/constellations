@@ -1,5 +1,5 @@
-import * as Storage from "./modules/storage.js";
-//import * as Storage from "http://localhost:10000/storage.js";
+//import * as Storage from "./modules/storage.js";
+import * as Storage from "http://localhost:10000/storage.js";
 
 
 const stardusts = [

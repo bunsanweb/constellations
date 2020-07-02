@@ -1,4 +1,5 @@
-import * as Peer from "./modules/peer.js";
+//import * as Peer from "./modules/peer.js";
+import * as Peer from "http://localhost:10000/peer.js";
 
 import "https://cdn.jsdelivr.net/npm/ipfs/dist/index.min.js";
 

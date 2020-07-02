@@ -1,7 +1,7 @@
-import * as Aggregator from "./modules/aggregator.js";
-import * as Stardust from "./modules/stardust.js";
-//import * as Aggregatort from "http://localhost:10000/aggregator.js";
-//import * as Stardust from "http://localhost:10000/stardust.js";
+//import * as Collector from "./modules/collector.js";
+//import * as Stardust from "./modules/stardust.js";
+import * as Collector from "http://localhost:10000/collector.js";
+import * as Stardust from "http://localhost:10000/stardust.js";
 
 const store = new Map();
 const fakeFetch = async function fetch(req) {
@@ -53,8 +53,8 @@ const eqSet = (a, b) => {
     {url: s2url, point: "http://example.com/target1", names: ["bar", "buzz"]},
   ];
   let index = 0;
-  const aggregator = new Aggregator.Aggregator(l1url);
-  aggregator.addEventListener("stardust-arrived", ev => {
+  const collector = new Collector.Collector(l1url);
+  collector.addEventListener("stardust-arrived", ev => {
     const {url, point, names} = ev.detail;
     //console.log(url, point, names);
     console.assert(url === expects[index].url, `uri ${index}`);
@@ -63,7 +63,7 @@ const eqSet = (a, b) => {
     index++;
   });
   
-  await aggregator.aggregate({fetch: fakeFetch});
+  await collector.collect({fetch: fakeFetch});
 
   //console.log("[finished]");
   if (typeof window.finish === "function" ) window.finish();
