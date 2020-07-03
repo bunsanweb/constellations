@@ -4,21 +4,21 @@
 //                     |<= Peer
 //
 import * as Core from "./core.js";
-import * as Book from "./core.js";
+import * as Book from "./book.js";
 import * as Storage from "./storage.js";
 import * as Peer from "./peer.js";
 
 
-export const Constellations = class {
+export const Constellations = class extends EventTarget {
   constructor(options) {
     super();
     this.options = options;
-    this.core = new Core();
+    this.core = new Core.Core();
     this.book = new Book.Book(options);
-    this.storage = new Storage.Storage(options);
     this.peer = null;
  
     this.listeners = {};
+    // TBD: collect errors as event 
     this.listeners.arrivedCore = ev => {
       const {url, point, names} = ev.detail;
       this.storage.post({url, point, names});
@@ -48,9 +48,10 @@ export const Constellations = class {
   static async start(node, options = {}) {
     const self = new this(options);
     // restore states
+    self.storage = await Storage.Storage.open(options);
     const links = await self.storage.getAll();
     for (const {url, point, names} of links) {
-      self.publish(url, point, names);
+      self.core.publish(url, point, names);
     }
     // restore book states
     const pages = await self.storage.getAllPages();
@@ -72,9 +73,11 @@ export const Constellations = class {
     // activate
     await self.peer.start();
     await self.book.start(options.strategy || new Book.RollingStrategy());
+    return self;
   }
   async stop() {
-    await Promise.all([this.book.stop(), this.peer.stop()]);
+    await Promise.all([
+      this.book.stop(), this.peer.stop(), this.storage.close()]);
     this.core.removeEventListener(
       "stardust-arrived", this.listeners.arrivedCore);
     this.book.removeEventListener(
