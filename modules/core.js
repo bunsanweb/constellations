@@ -16,6 +16,7 @@ export const Core = class extends EventTarget {
     const nameSet = new Set(names);
     const link = {url, point, names};
     this.links.push(link);
+    this.urls.add(url);
     this.dispatchEvent(
       new ConstellationsEvent("stardust-arrived", {detail: link}));
   }
