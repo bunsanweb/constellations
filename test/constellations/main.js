@@ -78,13 +78,14 @@ store.set(s22url, s22doc);
 Stardust.addStardustLink(l2doc, s22url, s22doc);
 //console.log(l2doc.documentElement.outerHTML);
 
+/*
 const expects = [
   {url: s11url, point: "http://example.com/target1", names: ["foo", "bar"]},
   {url: s12url, point: "http://example.com/target1", names: ["bar", "buzz"]},
   {url: s21url, point: "http://example.com/target2", names: ["foo", "bar"]},
   {url: s22url, point: "http://example.com/target2", names: ["bar", "buzz"]},
 ];
-
+*/
 
 (async () => {
   console.info(
@@ -105,23 +106,30 @@ const expects = [
     node, {strategy, dbname, fetch: fakeFetch});
   //TBD: peer.connect
   
-  const stream = constellations.subscribe({names: ["foo"]});
-  
   constellations.addPage(l1url);
   constellations.addPage(l2url);
   
+  const stream = constellations.subscribe({names: ["foo"]});
+  
+  const expects = [
+    {url: s11url, point: "http://example.com/target1", names: ["foo", "bar"]},
+    {url: s21url, point: "http://example.com/target2", names: ["foo", "bar"]},
+  ];
   const reader = stream.getReader();
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < expects.length; i++) {
     const {value, done} = await reader.read();
     if (done) break;
     const {url, point, names} = value;
-    console.log(url, point, names); //TBD: as assert
+    console.assert(expects[i].url === url);
+    console.assert(expects[i].point === point);
+    console.assert(eqSet(expects[i].names, names));
+    //console.log(url, point, names); //TBD: as assert
   }
   reader.releaseLock();
   
   await constellations.stop();
   await ready(indexedDB.deleteDatabase(dbname));
   
-  console.log("[finished]");
+  //console.log("[finished]");
   if (typeof window.finish === "function" ) window.finish();
 })().catch(console.error);
